@@ -50,6 +50,7 @@ class Env_Experiment(Frames_setup):
         self.child_frame = Frames_setup().children_frame[0]
         self.tfBuffer = tf2_ros.Buffer()
         listener = tf2_ros.TransformListener(self.tfBuffer)
+        time.sleep(0.5)
 
     def set_key_input(self):
     # 以下ではターミナルからの入力をEnterなしで実行するための設定変更
@@ -71,6 +72,7 @@ class Env_Experiment(Frames_setup):
         self.Vrow = np.zeros(3)
         self.Vfiltered = np.zeros(3)
         self.R = np.zeros((3, 3))
+        self.Euler = np.zeros(3)
 
 # ----------------------　ここまで　初期化関数-------------------------
 
@@ -86,7 +88,8 @@ class Env_Experiment(Frames_setup):
 
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, dt)
-        self.Vfiltered = self.mathfunc.LowPass2D(self.Vrow)
+        self.mathfunc.LowPass2D(self.Vrow)
+        self.Vfiltered = self.mathfunc.Vout
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
         self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
@@ -118,7 +121,7 @@ class Env_Experiment(Frames_setup):
 
 
     def take_log(self, t, ctrl):
-        self.log.write_state(t, self.P, self.V, self.R, self.Euler, np.zeros(3), np.zeros(3), self.M)
+        self.log.write_state(t, self.P, self.Vfiltered, self.R, self.Euler, np.zeros(3), np.zeros(3), self.M)
         ctrl.log(self.log, t)
 
     def save_log(self, t):

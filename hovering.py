@@ -13,13 +13,14 @@ from Exp_Controller.Controllers import Controllers
 
 def Experiment(Texp, Tsam, num_drone):
 
+    swarm = Crazyswarm()
+    timeHelper = swarm.timeHelper
+    cf = swarm.allcfs.crazyflies
+
     Env = Env_Experiment(Texp, Tsam, 0)
     Drone_env = [0]*num_drone
     Drone_ctrl = [0]*num_drone
 
-    swarm = Crazyswarm()
-    timeHelper = swarm.timeHelper
-    cf = swarm.allcfs.crazyflies
 
     zero = np.zeros(3)
     for i in range(num_drone):
@@ -38,13 +39,14 @@ def Experiment(Texp, Tsam, num_drone):
     while True:
 
         for i in range(num_drone):
-            Drone_env[i].take_log(t)    #　状態と入力を記録
+            # print(Drone_ctrl[i])
+            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
 
         for i in range(num_drone):
-            Drone_env[i].update_state() # 状態を更新
+            Drone_env[i].update_state(Tsam) # 状態を更新
 
         for i in range(num_drone):      # コントローラに状態を渡して入力加速度と角速度を計算
-            Drone_ctrl[i].set_state(Drone_env.P, Drone_env.Vfiltered, Drone_env.R, Drone_env.Euler)
+            Drone_ctrl[i].set_state(Drone_env[i].P, Drone_env[i].Vfiltered, Drone_env[i].R, Drone_env[i].Euler)
             Drone_ctrl[i].get_output(t)
         
         for i in range(num_drone):      # ドローンに入力を送信
