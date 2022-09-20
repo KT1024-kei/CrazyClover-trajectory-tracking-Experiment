@@ -19,7 +19,7 @@ from crazyswarm.msg  import GenericLogData
 # 関連モジュールのインポート
 from tools.Decorator import run_once
 from frames_setup import Frames_setup
-from tools.Mathfunction import Mathfunction
+from tools.Mathfunction import LowPath_Filter, Mathfunction
 from tools.Log import Log_data
 
 # 定値制御
@@ -39,7 +39,8 @@ class Env_Experiment(Frames_setup):
         self.init_state()
 
         self.mathfunc = Mathfunction()
-        self.mathfunc.Init_LowPass2D(5, self.Tsam)
+        self.Lowpass = LowPath_Filter()
+        self.Lowpass.Init_LowPass2D(fc=5)
         
         self.log = Log_data(num)
         
@@ -76,7 +77,7 @@ class Env_Experiment(Frames_setup):
 
 # ----------------------　ここまで　初期化関数-------------------------
 
-    def update_state(self, dt):
+    def update_state(self):
         try:
             f = self.tfBuffer.lookup_transform(self.world_frame, self.child_frame, rospy.Time(0))
 
@@ -87,13 +88,16 @@ class Env_Experiment(Frames_setup):
             exit()
 
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
-        self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, dt)
-        self.mathfunc.LowPass2D(self.Vrow)
-        self.Vfiltered = self.mathfunc.Vout
+        self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, self.dt)
+        self.Vfiltered = self.Lowpass.LowPass2D(self.Vrow, self.dt)
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
         self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
+        self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
     
+    def set_dt(self, dt):
+        self.dt = dt
+
     def log_callback(self, log):
         self.M = log.values
 
