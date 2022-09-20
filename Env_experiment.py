@@ -17,6 +17,7 @@ import tf
 from crazyswarm.msg  import GenericLogData
 
 # 関連モジュールのインポート
+from tools.Decorator import run_once
 from frames_setup import Frames_setup
 from tools.Mathfunction import Mathfunction
 from tools.Log import Log_data
@@ -32,7 +33,6 @@ class Env_Experiment(Frames_setup):
         self.Tend = T
         self.Tsam = Tsam
 
-        self.set_cf_function()
         self.set_frame()
         self.set_key_input()
         self.set_log_function()
@@ -71,7 +71,8 @@ class Env_Experiment(Frames_setup):
         self.Vrow = np.zeros(3)
         self.Vfiltered = np.zeros(3)
         self.R = np.zeros((3, 3))
-        self.Wb = np.zeros(3)
+
+# ----------------------　ここまで　初期化関数-------------------------
 
     def update_state(self, dt):
         try:
@@ -89,9 +90,36 @@ class Env_Experiment(Frames_setup):
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
         self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
-
+    
     def log_callback(self, log):
         self.M = log.values
+
+    def set_reference(self, controller,  
+                            P=np.array([0.0, 0.0, 0.0]),   
+                            V=np.array([0.0, 0.0, 0.0]), 
+                            R=np.array([[1.0, 0.0, 0.0],[0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]), 
+                            Euler=np.array([0.0, 0.0, 0.0]), 
+                            Wb=np.array([0.0, 0.0, 0.0]), 
+                            Euler_rate=np.array([0.0, 0.0, 0.0]),
+                            traj="circle",
+                            controller_type="pid",
+                            command = "hovering"):
+        controller.switch_controller(controller_type)
+        if controller_type == "pid":
+            if command =="hovering":
+                controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)    
+            elif command == "land":
+                P = np.array([0.0, 0.0, 0.0])
+                controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type) 
+            else:
+                controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)
+        elif controller_type == "mellinger":
+            controller.set_reference(traj)
+
+
+    def take_log(self, t, ctrl):
+        self.log.write_state(t, self.P, self.V, self.R, self.Euler, np.zeros(3), np.zeros(3), self.M)
+        ctrl.log(self.log, t)
 
     def save_log(self, t):
         self.log.csvWriter_state(t, self.P, self.Vfiltered, self.R, self.Euler, self.M)
@@ -126,3 +154,18 @@ class Env_Experiment(Frames_setup):
             return True
         return False
 
+
+
+    @run_once
+    def land(self, controller):
+        self.set_reference(controller=controller, command="land")
+        
+    @run_once
+    def hovering(self, controller, P):
+        self.set_reference(controller=controller, command="hovering", P=P)
+
+    def track_circle(self, controller):
+        self.set_reference(controller=controller, traj="circle", controller_type="mellinger")
+
+    def stop_track(self, controller):
+        self.set_reference(controller=controller, traj="stop", controller_type="mellinger")
