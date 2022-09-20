@@ -38,12 +38,18 @@ def Experiment(Texp, Tsam, num_drone):
 
     while True:
 
+        t = timeHelper.time() - Ts      # ループ周期を一定に維持
+        Tsam = t-Te
+        if Env.time_check(t, t - Te, Texp): break
+        else: Te = timeHelper.time() - Ts
+
         for i in range(num_drone):
             # print(Drone_ctrl[i])
             Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
 
         for i in range(num_drone):
-            Drone_env[i].update_state(Tsam) # 状態を更新
+            Drone_env[i].set_dt(dt=Tsam)
+            Drone_env[i].update_state() # 状態を更新
 
         for i in range(num_drone):      # コントローラに状態を渡して入力加速度と角速度を計算
             Drone_ctrl[i].set_state(Drone_env[i].P, Drone_env[i].Vfiltered, Drone_env[i].R, Drone_env[i].Euler)
@@ -60,9 +66,6 @@ def Experiment(Texp, Tsam, num_drone):
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
 
-        t = timeHelper.time() - Ts      # ループ周期を一定に維持
-        if Env.time_check(t, Te-t, Texp): break
-        else: Te = timeHelper.time()
 
 if __name__ == "__main__":
     Experiment(10, 0.01, 1)
