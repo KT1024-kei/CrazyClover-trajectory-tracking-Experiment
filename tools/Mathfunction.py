@@ -52,15 +52,15 @@ class Mathfunction():
     
     self.dt = dt
     fr = 1.0/(fc * self.dt)     
-    omega  =np.tan(np.pi/fr)
+    omega = np.tan(np.pi/fr)
 
-    c = 1.0 + 1.0/np.sqrt(2)*omega + omega**2
+    c = 1.0 + 2.0/np.sqrt(2)*omega + omega**2
     self.b0 = omega**2/c
     self.b1 = 2.0*self.b0
     self.b2 = self.b0
 
     self.a1 = 2*(omega**2 - 1)/c
-    self.a2 = (1 - 2/np.sqrt(2)*omega + omega**2)/c
+    self.a2 = (1.0 - 2.0/np.sqrt(2)*omega + omega**2)/c
 
     self.r0 = np.zeros(3)
     self.r1 = np.zeros(3)
