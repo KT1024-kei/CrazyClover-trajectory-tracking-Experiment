@@ -42,7 +42,7 @@ def Experiment(Texp, Tsam, num_drone):
         t = timeHelper.time() - Ts      # ループ周期を一定に維持
         Tsam = Te - t
         # print(1)
-        if Env.time_check(t, t - Te, Texp): break
+        if Env.time_check(t, t - Te, Texp + 5): break
         else: Te = timeHelper.time() - Ts
         for i in range(num_drone):
             # print(Drone_ctrl[i])
@@ -59,20 +59,16 @@ def Experiment(Texp, Tsam, num_drone):
         for i in range(num_drone):      # ドローンに入力を送信
             cf[i].cmdFullState(zero, 
                             zero, 
-                            np.array([0.0, 0.0, Drone_ctrl[i].input_acc/10000]), 
+                            np.array([0.0, 0.0, Drone_ctrl[i].input_acc/100]), 
                             0.0, 
                             Drone_ctrl[i].input_Wb)
         
-        if t > 10:                      # 着陸
+        if t > Texp:                      # 着陸
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
-                cf[i].cmdFullState(zero, 
-                            zero, 
-                            zero, 
-                            0.0, 
-                            zero)
-                
 
+    for i in range(num_drone):
+        cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
     Experiment(1, 0.01, 1)
