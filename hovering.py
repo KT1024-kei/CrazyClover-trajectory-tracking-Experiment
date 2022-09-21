@@ -39,19 +39,6 @@ def Experiment(Texp, Tsam, num_drone):
 
     while True:
 
-        t = timeHelper.time() - Ts      # ループ周期を一定に維持
-        Tsam = t - Te
-        # print(1)
-        if Env.time_check(t, t - Te, Texp + 5): break
-        else: Te = timeHelper.time() - Ts
-        for i in range(num_drone):
-            # print(Drone_ctrl[i])
-            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
-
-        for i in range(num_drone):
-            Drone_env[i].set_dt(dt=Tsam)
-            Drone_env[i].update_state() # 状態を更新
-
         for i in range(num_drone):      # コントローラに状態を渡して入力加速度と角速度を計算
             Drone_ctrl[i].set_state(Drone_env[i].P, Drone_env[i].Vfiltered, Drone_env[i].R, Drone_env[i].Euler)
             Drone_ctrl[i].get_output(t)
@@ -67,6 +54,21 @@ def Experiment(Texp, Tsam, num_drone):
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
 
+        for i in range(num_drone):
+            # print(Drone_ctrl[i])
+            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
+
+        t = timeHelper.time() - Ts      # ループ周期を一定に維持
+        Tsam = t - Te
+        # print(1)
+        if Env.time_check(t, t - Te, Texp + 5): break
+        else: Te = timeHelper.time() - Ts
+
+        for i in range(num_drone):
+            Drone_env[i].set_dt(dt=Tsam)
+            Drone_env[i].update_state() # 状態を更新
+
+
     for i in range(num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
@@ -74,4 +76,6 @@ if __name__ == "__main__":
     Experiment(1, 0.01, 1)
 
 
+# モータマップ4つめ修正
+# 制御周期を姿勢周期にする
 

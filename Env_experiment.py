@@ -75,6 +75,19 @@ class Env_Experiment(Frames_setup):
         self.R = np.zeros((3, 3))
         self.Euler = np.zeros(3)
 
+        try:
+            f = self.tfBuffer.lookup_transform(self.world_frame, self.child_frame, rospy.Time(0))
+
+        # 取得できなかった場合は0.5秒間処理を停止し処理を再開する
+        except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+            rospy.logerr('LookupTransform Error !')
+            rospy.sleep(0.5)
+            exit()
+
+        self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
+        self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
+        self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
+        self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
 # ----------------------　ここまで　初期化関数-------------------------
 
     def update_state(self):
