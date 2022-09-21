@@ -26,11 +26,11 @@ from tools.Log import Log_data
 class Env_Experiment(Frames_setup):
 
     # このクラスの初期設定を行う関数
-    def __init__(self, T, Tsam, num):
+    def __init__(self, Texp, Tsam, num):
         # frames_setup, vel_controller の初期化
         super(Frames_setup, self).__init__()
 
-        self.Tend = T
+        self.Tend = Texp
         self.Tsam = Tsam
 
         self.set_frame()
@@ -100,6 +100,7 @@ class Env_Experiment(Frames_setup):
 
     def log_callback(self, log):
         self.M = log.values
+        print(log.values)
 
     def set_reference(self, controller,  
                             P=np.array([0.0, 0.0, 0.0]),   

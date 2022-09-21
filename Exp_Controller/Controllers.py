@@ -4,8 +4,8 @@ sys.path.append('../')
 import numpy as np
 
 
-from Controller.Pid_Controller import Pid_Controller
-from Controller.Mellinger_controller import Mellinger
+from Exp_Controller.Pid_Controller import Pid_Controller
+from Exp_Controller.Mellinger_controller import Mellinger
 
 class Controllers():
 

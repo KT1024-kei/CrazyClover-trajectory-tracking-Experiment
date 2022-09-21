@@ -27,22 +27,23 @@ def Experiment(Texp, Tsam, num_drone):
         Drone_env[i] = Env_Experiment(Texp, Tsam, i)
         Drone_ctrl[i] = Controllers(Tsam, "pid")
 
-    Ts = timeHelper.time()
-    Te = timeHelper.time()
-    t = 0
         
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 0.0, 1.0])
+        P = np.array([0.0, 0.0, 0.2])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(5)             # 5秒静止
+
+    Ts = timeHelper.time()
+    Te = 0
+    t = 0
 
     while True:
 
         t = timeHelper.time() - Ts      # ループ周期を一定に維持
-        Tsam = t-Te
+        Tsam = Te - t
+        # print(1)
         if Env.time_check(t, t - Te, Texp): break
         else: Te = timeHelper.time() - Ts
-
         for i in range(num_drone):
             # print(Drone_ctrl[i])
             Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
@@ -58,17 +59,23 @@ def Experiment(Texp, Tsam, num_drone):
         for i in range(num_drone):      # ドローンに入力を送信
             cf[i].cmdFullState(zero, 
                             zero, 
-                            np.array([0.0, 0.0, Drone_ctrl[i].input_acc]), 
+                            np.array([0.0, 0.0, Drone_ctrl[i].input_acc/10000]), 
                             0.0, 
                             Drone_ctrl[i].input_Wb)
         
         if t > 10:                      # 着陸
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
+                cf[i].cmdFullState(zero, 
+                            zero, 
+                            zero, 
+                            0.0, 
+                            zero)
+                
 
 
 if __name__ == "__main__":
-    Experiment(10, 0.01, 1)
+    Experiment(1, 0.01, 1)
 
 
 

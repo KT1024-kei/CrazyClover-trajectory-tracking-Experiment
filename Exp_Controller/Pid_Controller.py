@@ -75,6 +75,7 @@ class Pid_Controller(Mathfunction):
       self.R_pid.desired = self.Eulerref[0]
       self.P_pid.desired = self.Eulerref[1]
       self.Y_pid.desired = self.Eulerref[2]
+      self.input_thrust_gf = 0.0
 
 
     self.R_pid.runpid()

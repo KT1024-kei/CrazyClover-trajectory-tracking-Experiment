@@ -2,7 +2,7 @@ import sys
 sys.path.append('../')
 
 import numpy as np
-from Controller.Trajectory import Trajectory
+from Exp_Controller.Trajectory import Trajectory
 from tools.Mathfunction import Mathfunction
 
 class Mellinger(Mathfunction):
