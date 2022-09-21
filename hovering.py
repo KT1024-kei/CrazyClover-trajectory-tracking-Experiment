@@ -40,7 +40,7 @@ def Experiment(Texp, Tsam, num_drone):
     while True:
 
         t = timeHelper.time() - Ts      # ループ周期を一定に維持
-        Tsam = Te - t
+        Tsam = t - Te
         # print(1)
         if Env.time_check(t, t - Te, Texp + 5): break
         else: Te = timeHelper.time() - Ts
@@ -72,7 +72,6 @@ def Experiment(Texp, Tsam, num_drone):
 
 if __name__ == "__main__":
     Experiment(1, 0.01, 1)
-
 
 
 
