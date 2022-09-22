@@ -24,8 +24,8 @@ class Pid_Controller(Mathfunction):
       self.input_Wb = np.zeros(3)
 
   def pid_init(self):
-      self.R_pid = PID(15.0, 5.0, 0.0, self.dt)
-      self.P_pid = PID(15.0, 5.0, 0.0, self.dt)
+      self.R_pid = PID(7.0, 3.0, 0.0, self.dt)
+      self.P_pid = PID(7.0, 3.0, 0.0, self.dt)
       self.Y_pid = PID(10.0, 3.0, 0.0, self.dt)
 
       self.Vx_pid = PID(1.0, 0.0, 0.0, self.dt)
@@ -108,7 +108,7 @@ class Pid_Controller(Mathfunction):
     self.Vz_pid.runpid()
 
     self.R_pid.desired = -(self.Vy_pid.output * cosY) + (self.Vx_pid.output  * sinY)
-    self.P_pid.desired = -(-(self.Vx_pid.output * cosY) - (self.Vy_pid.output * sinY))
+    self.P_pid.desired = (-(self.Vx_pid.output * cosY) - (self.Vy_pid.output * sinY))
 
     self.input_thrust_gf = self.Vz_pid.output
     
