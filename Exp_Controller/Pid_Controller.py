@@ -24,13 +24,13 @@ class Pid_Controller(Mathfunction):
       self.input_Wb = np.zeros(3)
 
   def pid_init(self):
-      self.R_pid = PID(7.0, 3.0, 0.0, self.dt)
-      self.P_pid = PID(7.0, 3.0, 0.0, self.dt)
-      self.Y_pid = PID(10.0, 3.0, 0.0, self.dt)
+      self.R_pid = PID(10.0, 2.0, 0.0, self.dt, 1.0)
+      self.P_pid = PID(10.0, 2.0, 0.0, self.dt, 1.0)
+      self.Y_pid = PID(10.0, 1.5, 0.0, self.dt, 1.0)
 
-      self.Vx_pid = PID(1.0, 0.0, 0.0, self.dt)
-      self.Vy_pid = PID(1.0, 0.0, 0.0, self.dt)
-      self.Vz_pid = PID(10.0, 5.0, 0.0, self.dt)
+      self.Vx_pid = PID(0.1, 0.0, 0.0, self.dt)
+      self.Vy_pid = PID(0.1, 0.0, 0.0, self.dt)
+      self.Vz_pid = PID(5.0, 0.1, 0.0, self.dt)
 
       self.Px_pid = PID(1.0, 0.0, 0.0, self.dt)
       self.Py_pid = PID(1.0, 0.0, 0.0, self.dt)
@@ -92,6 +92,7 @@ class Pid_Controller(Mathfunction):
 
     input_Euler_rate = np.array([self.R_pid.output, self.P_pid.output, self.Y_pid.output])
     self.input_Wb = self.EAR2BAV(self.Euler, input_Euler_rate)
+
     self.input_acc = max(-9.8/2.0, self.input_thrust_gf) + self.gravity_calcel
 
   def controller_velocity_pid(self):
@@ -108,7 +109,7 @@ class Pid_Controller(Mathfunction):
     self.Vz_pid.runpid()
 
     self.R_pid.desired = -(self.Vy_pid.output * cosY) + (self.Vx_pid.output  * sinY)
-    self.P_pid.desired = (-(self.Vx_pid.output * cosY) - (self.Vy_pid.output * sinY))
+    self.P_pid.desired = -(-(self.Vx_pid.output * cosY) - (self.Vy_pid.output * sinY))
 
     self.input_thrust_gf = self.Vz_pid.output
     
@@ -137,4 +138,7 @@ class Pid_Controller(Mathfunction):
     self.controller_velocity_pid()
 
   def log_nom(self, log, t):
-    log.write_nom(t=t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.Pref, V=self.Vref, Euler=self.Eulerref, Wb=self.Wbref, Euler_rate=self.Euler_rateref)
+    log.write_nom(t=t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.Pref, 
+                        V=np.array([self.Vx_pid.desired, self.Vy_pid.desired, self.Vz_pid.desired]), 
+                        Euler=np.array([self.R_pid.desired, self.P_pid.desired, self.Y_pid.desired]), 
+                        Wb=self.Wbref, Euler_rate=self.Euler_rateref)

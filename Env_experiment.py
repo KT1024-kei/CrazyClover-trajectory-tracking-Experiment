@@ -39,8 +39,12 @@ class Env_Experiment(Frames_setup):
         self.init_state()
 
         self.mathfunc = Mathfunction()
-        self.Lowpass = LowPath_Filter()
-        self.Lowpass.Init_LowPass2D(fc=5)
+        self.LowpassP = LowPath_Filter()
+        self.LowpassP.Init_LowPass2D(fc=5)
+        self.LowpassV = LowPath_Filter()
+        self.LowpassV.Init_LowPass2D(fc=5)
+        self.LowpassE = LowPath_Filter()
+        self.LowpassE.Init_LowPass2D(fc=5)
         
         self.log = Log_data(num)
         
@@ -102,12 +106,13 @@ class Env_Experiment(Frames_setup):
 
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, self.dt)
-        self.Vfiltered = self.Lowpass.LowPass2D(self.Vrow, self.dt)
+        self.Vfiltered = self.LowpassV.LowPass2D(self.Vrow, self.dt)
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
-        self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
+        self.Euler = self.LowpassE.LowPass2D(tf_conversions.transformations.euler_from_quaternion(self.Quaternion), self.dt)
         
         self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
         self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
+        self.P = self.LowpassP.LowPass2D(self.P, self.dt)
     
     def set_dt(self, dt):
         self.dt = dt
