@@ -131,8 +131,8 @@ class Pid_Controller(Mathfunction):
     self.Py_pid.runpid()
     self.Pz_pid.runpid()
 
-    self.Vx_pid.desired = self.Px_pid.output * cosY - self.Py_pid.output * sinY
-    self.Vy_pid.desired = self.Py_pid.output * cosY + self.Px_pid.output * sinY
+    self.Vx_pid.desired = self.Px_pid.output# * cosY - self.Py_pid.output * sinY
+    self.Vy_pid.desired = self.Py_pid.output# * cosY + self.Px_pid.output * sinY
     self.Vz_pid.desired = self.Pz_pid.output
 
     self.controller_velocity_pid()

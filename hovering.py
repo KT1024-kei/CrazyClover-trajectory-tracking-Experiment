@@ -43,22 +43,22 @@ def Experiment(Texp, Tsam, num_drone):
             Drone_ctrl[i].set_state(Drone_env[i].P, Drone_env[i].Vfiltered, Drone_env[i].R, Drone_env[i].Euler)
             Drone_ctrl[i].get_output(t)
         
-        # for i in range(num_drone):      # ドローンに入力を送信
-        #     cf[i].cmdFullState(zero, 
-        #                     zero, 
-        #                     np.array([0.0, 0.0, Drone_ctrl[i].input_acc/100]), 
-        #                     0.0, 
-        #                     Drone_ctrl[i].input_Wb)
+        for i in range(num_drone):      # ドローンに入力を送信
+            cf[i].cmdFullState(zero, 
+                            zero, 
+                            np.array([0.0, 0.0, Drone_ctrl[i].input_acc/100]), 
+                            0.0, 
+                            Drone_ctrl[i].input_Wb)
         
-        if t > Texp-1:                      # 着陸
+        if t > Texp-1:                                  # 着陸 実験終了5秒前
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
 
         for i in range(num_drone):
             # print(Drone_ctrl[i])
-            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
+            Drone_env[i].take_log(t, Drone_ctrl[i])     #　状態と入力を記録
 
-        t = timeHelper.time() - Ts      # ループ周期を一定に維持
+        t = timeHelper.time() - Ts                      # ループ周期を一定に維持
         Tsam = t - Te
         Te = t
         if Env.time_check(t, t - Te, Texp): break
@@ -67,10 +67,6 @@ def Experiment(Texp, Tsam, num_drone):
             Drone_env[i].set_dt(dt=Tsam)
             Drone_env[i].update_state() # 状態を更新
         
-        if t > 10:
-            print("##########################################")
-
-
     for i in range(num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 

@@ -91,7 +91,7 @@ class Env_Experiment(Frames_setup):
         self.Ppre[0] = f.transform.translation.x; self.Ppre[1] = f.transform.translation.y; self.Ppre[2] = f.transform.translation.z
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
-        self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
+        self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)[:3, :3]
 # ----------------------　ここまで　初期化関数-------------------------
 
     def update_state(self):
