@@ -93,8 +93,8 @@ class LowPath_Filter():
 
     c = 1.0 + 2.0/np.sqrt(2)*omega + omega**2
     b0 = omega**2/c
-    b1 = 2.0*self.b0
-    b2 = self.b0
+    b1 = 2.0*b0
+    b2 = b0
 
     a1 = 2*(omega**2 - 1)/c
     a2 = (1.0 - 2.0/np.sqrt(2)*omega + omega**2)/c

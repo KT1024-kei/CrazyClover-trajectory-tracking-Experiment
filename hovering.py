@@ -29,7 +29,7 @@ def Experiment(Texp, Tsam, num_drone):
 
         
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 0.0, 0.4])
+        P = np.array([0.0, 0.0, 0.5])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(2)             # 5秒静止
 
@@ -48,17 +48,17 @@ def Experiment(Texp, Tsam, num_drone):
                             zero, 
                             np.array([0.0, 0.0, Drone_ctrl[i].input_acc/100]), 
                             0.0, 
-                            Drone_ctrl[i].input_Wb)
+                            np.array([Drone_ctrl[i].input_Wb[0]*1, Drone_ctrl[i].input_Wb[1]*1, Drone_ctrl[i].input_Wb[2]]))
         
-        if t > Texp-1:                                  # 着陸 実験終了5秒前
+        if t > Texp-2:                      # 着陸
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
 
         for i in range(num_drone):
             # print(Drone_ctrl[i])
-            Drone_env[i].take_log(t, Drone_ctrl[i])     #　状態と入力を記録
+            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
 
-        t = timeHelper.time() - Ts                      # ループ周期を一定に維持
+        t = timeHelper.time() - Ts      # ループ周期を一定に維持
         Tsam = t - Te
         Te = t
         if Env.time_check(t, t - Te, Texp): break
@@ -67,11 +67,15 @@ def Experiment(Texp, Tsam, num_drone):
             Drone_env[i].set_dt(dt=Tsam)
             Drone_env[i].update_state() # 状態を更新
         
+        if t > 10:
+            print("##########################################")
+
+
     for i in range(num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
-    Experiment(3, 0.01, 1)
+    Experiment(15, 0.01, 1)
 
 
 # モータマップ4つめ修正
