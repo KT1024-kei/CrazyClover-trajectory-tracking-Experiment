@@ -17,7 +17,7 @@ class Pid_Controller(Mathfunction):
       self.input_thrust_pwm = 0.0
       self.input_M_pwm = np.array([0.0, 0.0, 0.0])
 
-      self.gravity_calcel = 9.7
+      self.gravity_calcel = 9.81
       self.rad2deg = 180/np.pi
 
       self.input_acc = 0.0
@@ -26,15 +26,15 @@ class Pid_Controller(Mathfunction):
   def pid_init(self):
       self.R_pid = PID(10.0, 2.5, 0.0, self.dt, 1.0)
       self.P_pid = PID(10.0, 2.5, 0.0, self.dt, 1.0)
-      self.Y_pid = PID(7.0, 1.5, 0.0, self.dt, 1.0)
+      self.Y_pid = PID(10.0, 1.5, 0.0, self.dt, 1.0)
 
       self.Vx_pid = PID(0.1, 0.1, 0.0, self.dt)
       self.Vy_pid = PID(0.1, 0.1, 0.0, self.dt)
-      self.Vz_pid = PID(3.0, 1.0, 0.0, self.dt)
+      self.Vz_pid = PID(3.0, 0.1, 0.0, self.dt)
 
       self.Px_pid = PID(1.0, 0.0, 0.0, self.dt)
       self.Py_pid = PID(1.0, 0.0, 0.0, self.dt)
-      self.Pz_pid = PID(1.0, 0.5, 0.0, self.dt)
+      self.Pz_pid = PID(1.0, 0.0, 0.0, self.dt)
 
   def set_state(self, P, V, R, Euler):
       

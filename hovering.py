@@ -29,7 +29,7 @@ def Experiment(Texp, Tsam, num_drone):
 
         
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 0.0, 0.5])
+        P = np.array([0.0, 0.0, 0.6])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(2)             # 5秒静止
 
@@ -75,7 +75,7 @@ def Experiment(Texp, Tsam, num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
-    Experiment(15, 0.01, 1)
+    Experiment(20, 0.01, 1)
 
 
 # モータマップ4つめ修正
