@@ -4,8 +4,8 @@ sys.path.append('../')
 import numpy as np
 
 
-from Exp_Controller.Pid_Controller import Pid_Controller
-from Exp_Controller.Mellinger_controller import Mellinger
+from Controller.Pid_Controller import Pid_Controller
+from Controller.Mellinger_controller import Mellinger
 
 class Controllers():
 
@@ -27,9 +27,9 @@ class Controllers():
     self.input_thrust_pwm = 0.0
     self.input_M_pwm = np.array([0.0, 0.0, 0.0])
 
-    self.gravity_calcel = 9.8
+    self.gravity_calcel = 9.8 
     self.rad2deg = 180/np.pi
-    
+
   def select_controller(self):
 
     if self.controller_mode == "pid":
@@ -39,6 +39,7 @@ class Controllers():
       self.set_state = self.pid_controller.set_state
       self.init_controller = self.pid_controller.pid_init
       self.log = self.pid_controller.log_nom
+      self.set_dt = self.pid_controller.set_dt
 
     elif self.controller_mode == "mellinger":
       self.controller = self.mellinger_controller
@@ -48,6 +49,8 @@ class Controllers():
       self.set_reference = self.mellinger_controller.set_reference
       self.stop_tracking = self.mellinger_controller.stop_tracking
       self.log = self.mellinger_controller.log_nom
+      self.set_dt = self.mellinger_controller.set_dt
+    self.init_controller()
   
   def switch_controller(self, controller_type):
 
@@ -59,6 +62,7 @@ class Controllers():
       self.set_state = self.pid_controller.set_state
       self.init_controller = self.pid_controller.pid_init
       self.log = self.pid_controller.log_nom
+      self.set_dt = self.pid_controller.set_dt
 
     elif controller_type == "mellinger":
       self.mellinger_controller = Mellinger(self.dt)
@@ -69,6 +73,7 @@ class Controllers():
       self.set_reference = self.mellinger_controller.set_reference
       self.stop_tracking = self.mellinger_controller.stop_tracking
       self.log = self.mellinger_controller.log_nom
+      self.set_dt = self.mellinger_controller.set_dt
 
     self.init_controller()
   
