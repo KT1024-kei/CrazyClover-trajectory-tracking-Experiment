@@ -19,10 +19,10 @@ class Trajectory():
     self.t = t
 
   def traj_circle(self):
-    T = 5.0
-    A = 4.0
+    T = 10.0
+    A = 1.0
     w = 2*np.pi/T
-    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 1.0
+    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 0.5
     self.traj_vel[0] = -A*w*np.sin(w*self.t);    self.traj_vel[1] =  A*w*np.cos(w*self.t);    self.traj_vel[2] = 0.0
     self.traj_acc[0] = -A*w**2*np.cos(w*self.t); self.traj_acc[1] = -A*w**2*np.sin(w*self.t); self.traj_acc[2] = 9.8
     self.traj_jer[0] =  A*w**3*np.sin(w*self.t); self.traj_jer[1] = -A*w**3*np.cos(w*self.t); self.traj_jer[2] = 0.0
