@@ -15,7 +15,7 @@ class Mellinger(Mathfunction):
     self.kp = np.array([1.0, 1.0, 1.0])
     self.kv = np.array([1.0, 1.0, 1.0])
     self.ka = np.array([0.0, 0.0, 0.0])
-    self.kR = np.array([100.0, 100.0, 10.0])
+    self.kR = np.array([10.0, 10.0, 10.0])
 
     self.Euler_nom = np.array([0.0, 0.0, 0.0])
     self.Euler_rate_nom = np.array([0.0, 0.0, 0.0])
