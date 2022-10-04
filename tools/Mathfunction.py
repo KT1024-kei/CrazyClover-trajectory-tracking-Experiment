@@ -46,6 +46,19 @@ class Mathfunction():
     
     return Wb
   
+  def Remove_outlier(self, value_now, value_pre, variation_lim, Lower_lim=0.1, Upper_lim=0.1):
+    abs_variation = abs(value_now - value_pre)
+    if abs_variation > variation_lim:
+      return value_pre
+    else:
+      return value_now
+    #   if value_now > value_pre:
+    #     value_now = value_pre + Upper_lim
+    #   else:
+    #     value_now = value_pre - Lower_lim
+    
+    # return value_now
+  
   ## https://www.earlevel.com/main/2003/03/02/the-bilinear-z-transform/
   ## https://en.wikipedia.org/wiki/Digital_biquad_filter See transposed direct form
   def Init_LowPass2D(self, fc, dt): # cut off frecency, sampling rate

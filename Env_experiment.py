@@ -104,16 +104,21 @@ class Env_Experiment(Frames_setup):
             rospy.sleep(0.5)
             exit()
 
+        # 位置情報の更新
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.P = self.LowpassP.LowPass2D(self.P, self.dt)
+        self.P[0] = self.mathfunc.Remove_outlier(self.P[0], self.Ppre[0], 0.5)
+        self.P[1] = self.mathfunc.Remove_outlier(self.P[1], self.Ppre[1], 0.5)
+        self.P[2] = self.mathfunc.Remove_outlier(self.P[2], self.Ppre[2], 0.5)
+        # 速度情報の更新
         self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, self.dt)
         self.Vfiltered = self.LowpassV.LowPass2D(self.Vrow, self.dt)
+        # 姿勢角の更新
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = self.LowpassE.LowPass2D(tf_conversions.transformations.euler_from_quaternion(self.Quaternion), self.dt)
-        
         self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
-        self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
     
+        self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
     def set_dt(self, dt):
         self.dt = dt
 
@@ -130,15 +135,13 @@ class Env_Experiment(Frames_setup):
                             Euler_rate=np.array([0.0, 0.0, 0.0]),
                             traj="circle",
                             controller_type="pid",
-                            command = "hovering",
-                            init_controller=True):
-        if init_controller:
-            controller.select_controller()
+                            command = "hovering"):
+        controller.switch_controller(controller_type)
         if controller_type == "pid":
             if command =="hovering":
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)    
             elif command == "land":
-                P = np.array([0.0, 0.0, 0.0])
+                P = np.array([0.0, 0.0, -0.2])
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type) 
             else:
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)
@@ -187,15 +190,14 @@ class Env_Experiment(Frames_setup):
 
     @run_once
     def land(self, controller):
-        controller.switch_controller("pid")
-        self.set_reference(controller=controller, command="land", init_controller=True)
+        self.set_reference(controller=controller, command="land")
         
     @run_once
     def hovering(self, controller, P):
         self.set_reference(controller=controller, command="hovering", P=P)
 
-    def track_circle(self, controller, flag=False):
-        self.set_reference(controller=controller, traj="circle", controller_type="mellinger", init_controller=flag)
+    def track_circle(self, controller):
+        self.set_reference(controller=controller, traj="circle", controller_type="mellinger")
 
     def stop_track(self, controller):
-        self.set_reference(controller=controller, traj="stop", controller_type="mellinger", init_controller=False)
+        self.set_reference(controller=controller, traj="stop", controller_type="mellinger")
