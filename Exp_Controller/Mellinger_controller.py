@@ -12,10 +12,10 @@ class Mellinger(Mathfunction):
     print("Init Mellinger Controller")
 
     # init trajectory
-    self.kp = np.array([1.0, 1.0, 1.0])
-    self.kv = np.array([1.0, 1.0, 1.0])
+    self.kp = np.array([0.1, 0.1, 3.0])
+    self.kv = np.array([0.1, 0.1, 2.5])
     self.ka = np.array([0.0, 0.0, 0.0])
-    self.kR = np.array([10.0, 10.0, 10.0])
+    self.kR = np.array([25.0, 25.0, 10.0])
 
     self.Euler_nom = np.array([0.0, 0.0, 0.0])
     self.Euler_rate_nom = np.array([0.0, 0.0, 0.0])
@@ -24,8 +24,10 @@ class Mellinger(Mathfunction):
     self.input_acc = 0.0
     self.input_Wb = np.zeros(3)
 
+    self.trajectory = Trajectory()
+
   def set_reference(self, traj_plan):
-    self.trajectory = Trajectory(traj_plan)
+    self.trajectory.set_traj_plan(traj_plan)
     self.rad2deg = 180.0/np.pi
 
   def set_state(self, P, V, R, Euler):

@@ -45,10 +45,31 @@ class Mathfunction():
                               [0.0, -sinR, cosP * cosR]])) , Euler_rate)
     
     return Wb
-  
+
+  def Euler2Rot(self, Euler):
+    r = Euler[0]; p = Euler[1]; y = Euler[2]
+    cosR = np.cos(r); sinR = np.sin(r)
+    cosP = np.cos(p); sinP = np.sin(p)
+    cosY = np.cos(y); sinY = np.sin(y)
+
+    R1 = np.matrix(([cosR,-sinR,0],
+                    [sinR,cosR,0],
+                    [0,0,1]))
+    
+    R2 = np.matrix(([cosP,0,sinP],
+                    [0,1,0],
+                    [-sinP,0,cosP]))
+    
+    R3 = np.matrix(([cosY,-sinY,0],
+                    [sinY,cosY,0],
+                    [0,0,1]))
+    
+    return np.array(R3*R2*R1)
+
   def Remove_outlier(self, value_now, value_pre, variation_lim, Lower_lim=0.1, Upper_lim=0.1):
     abs_variation = abs(value_now - value_pre)
     if abs_variation > variation_lim:
+      print("variation occor")
       return value_pre
     else:
       return value_now

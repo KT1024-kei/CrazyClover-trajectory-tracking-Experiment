@@ -33,10 +33,6 @@ class Env_Experiment(Frames_setup):
         self.Tend = Texp
         self.Tsam = Tsam
 
-        self.set_frame()
-        self.set_key_input()
-        self.set_log_function()
-        self.init_state()
 
         self.mathfunc = Mathfunction()
         self.LowpassP = LowPath_Filter()
@@ -45,6 +41,11 @@ class Env_Experiment(Frames_setup):
         self.LowpassV.Init_LowPass2D(fc=5)
         self.LowpassE = LowPath_Filter()
         self.LowpassE.Init_LowPass2D(fc=5)
+        
+        self.set_frame()
+        self.set_key_input()
+        self.set_log_function()
+        self.init_state()
         
         self.log = Log_data(num)
         
@@ -91,7 +92,9 @@ class Env_Experiment(Frames_setup):
         self.Ppre[0] = f.transform.translation.x; self.Ppre[1] = f.transform.translation.y; self.Ppre[2] = f.transform.translation.z
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
-        self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
+        self.Eulerpre = self.Euler
+        # self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)[:3, :3]
+        self.R = self.mathfunc.Euler2Rot(self.Euler)
 # ----------------------　ここまで　初期化関数-------------------------
 
     def update_state(self):
@@ -107,24 +110,28 @@ class Env_Experiment(Frames_setup):
         # 位置情報の更新
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.P = self.LowpassP.LowPass2D(self.P, self.dt)
-        self.P[0] = self.mathfunc.Remove_outlier(self.P[0], self.Ppre[0], 0.5)
-        self.P[1] = self.mathfunc.Remove_outlier(self.P[1], self.Ppre[1], 0.5)
-        self.P[2] = self.mathfunc.Remove_outlier(self.P[2], self.Ppre[2], 0.5)
+        # self.P[0] = self.mathfunc.Remove_outlier(self.P[0], self.Ppre[0], 0.2)
+        # self.P[1] = self.mathfunc.Remove_outlier(self.P[1], self.Ppre[1], 0.2)
+        # self.P[2] = self.mathfunc.Remove_outlier(self.P[2], self.Ppre[2], 0.1)
         # 速度情報の更新
         self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, self.dt)
         self.Vfiltered = self.LowpassV.LowPass2D(self.Vrow, self.dt)
         # 姿勢角の更新
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = self.LowpassE.LowPass2D(tf_conversions.transformations.euler_from_quaternion(self.Quaternion), self.dt)
-        self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)
-    
+        self.Euler[0] = self.mathfunc.Remove_outlier(self.Euler[0], self.Eulerpre[0], 0.1)
+        self.Euler[1] = self.mathfunc.Remove_outlier(self.Euler[1], self.Eulerpre[1], 0.1)
+        self.Euler[2] = self.mathfunc.Remove_outlier(self.Euler[2], self.Eulerpre[2], 0.1)
+        # self.R = tf_conversions.transformations.quaternion_matrix(self.Quaternion)[:3, :3]
+        self.R = self.mathfunc.Euler2Rot(self.Euler)
         self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
+        self.Eulerpre = self.Euler
     def set_dt(self, dt):
         self.dt = dt
 
     def log_callback(self, log):
         self.M = log.values
-        print(log.values)
+
 
     def set_reference(self, controller,  
                             P=np.array([0.0, 0.0, 0.0]),   
@@ -135,13 +142,14 @@ class Env_Experiment(Frames_setup):
                             Euler_rate=np.array([0.0, 0.0, 0.0]),
                             traj="circle",
                             controller_type="pid",
-                            command = "hovering"):
-        controller.switch_controller(controller_type)
+                            command = "hovering",
+                            init_controller=True):
+        if init_controller:
+            controller.select_controller()
         if controller_type == "pid":
             if command =="hovering":
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)    
             elif command == "land":
-                P = np.array([0.0, 0.0, -0.2])
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type) 
             else:
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)
@@ -190,14 +198,17 @@ class Env_Experiment(Frames_setup):
 
     @run_once
     def land(self, controller):
-        self.set_reference(controller=controller, command="land")
+        controller.switch_controller("pid")
+        self.set_reference(controller=controller, command="land", init_controller=True, P=self.land_P)
         
     @run_once
     def hovering(self, controller, P):
         self.set_reference(controller=controller, command="hovering", P=P)
+        self.land_P = np.array([0.0, 0.0, 0.1])
 
-    def track_circle(self, controller):
-        self.set_reference(controller=controller, traj="circle", controller_type="mellinger")
+    def track_circle(self, controller, flag):
+        self.set_reference(controller=controller, traj="circle", controller_type="mellinger", init_controller=flag)
 
     def stop_track(self, controller):
-        self.set_reference(controller=controller, traj="stop", controller_type="mellinger")
+        self.set_reference(controller=controller, traj="stop", controller_type="mellinger", init_controller=False)
+        self.land_P[0:2] = self.P[0:2]

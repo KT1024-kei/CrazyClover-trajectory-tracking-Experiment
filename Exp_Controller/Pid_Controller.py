@@ -24,17 +24,17 @@ class Pid_Controller(Mathfunction):
       self.input_Wb = np.zeros(3)
 
   def pid_init(self):
-      self.R_pid = PID(10.0, 2.5, 0.0, self.dt, 1.0)
-      self.P_pid = PID(10.0, 2.5, 0.0, self.dt, 1.0)
+      self.R_pid = PID(10.0, 3.0, 0.0, self.dt, 1.0)
+      self.P_pid = PID(10.0, 3.0, 0.0, self.dt, 1.0)
       self.Y_pid = PID(10.0, 1.5, 0.0, self.dt, 1.0)
 
-      self.Vx_pid = PID(0.1, 0.1, 0.0, self.dt)
-      self.Vy_pid = PID(0.1, 0.1, 0.0, self.dt)
-      self.Vz_pid = PID(3.0, 0.1, 0.0, self.dt)
+      self.Vx_pid = PID(0.3, 0.0, 0.0, self.dt)
+      self.Vy_pid = PID(0.3, 0.0, 0.0, self.dt)
+      self.Vz_pid = PID(2.0, 0.0, 0.0, self.dt)
 
-      self.Px_pid = PID(1.0, 0.0, 0.0, self.dt)
-      self.Py_pid = PID(1.0, 0.0, 0.0, self.dt)
-      self.Pz_pid = PID(1.0, 0.0, 0.0, self.dt)
+      self.Px_pid = PID(1.4, 0.05, 0.0, self.dt)
+      self.Py_pid = PID(1.4, 0.05, 0.0, self.dt)
+      self.Pz_pid = PID(2.0, 2.5, 0.0, self.dt)
 
   def set_state(self, P, V, R, Euler):
       
@@ -80,7 +80,7 @@ class Pid_Controller(Mathfunction):
 
     self.R_pid.runpid()
     self.P_pid.runpid()
-    
+
     # update PID for yaw axis
     Yaw_Error = self.Y_pid.desired - self.Euler[2]
     if Yaw_Error > np.pi:
@@ -93,7 +93,7 @@ class Pid_Controller(Mathfunction):
     input_Euler_rate = np.array([self.R_pid.output, self.P_pid.output, self.Y_pid.output])
     self.input_Wb = self.EAR2BAV(self.Euler, input_Euler_rate)
 
-    self.input_acc = max(-9.8/2.0, self.input_thrust_gf) + self.gravity_calcel
+    self.input_acc = max(-9.8/3.0, self.input_thrust_gf) + self.gravity_calcel
 
   def controller_velocity_pid(self):
     # print("PID Velocity controller")
