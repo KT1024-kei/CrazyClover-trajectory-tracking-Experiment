@@ -21,7 +21,7 @@ class Trajectory():
     self.t = t
 
   def traj_circle(self):
-    T = 6.0
+    T = 20.0
     A = 1.0
     w = 2*np.pi/T
     self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 0.5
