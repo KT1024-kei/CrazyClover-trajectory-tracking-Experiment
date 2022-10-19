@@ -28,7 +28,7 @@ def Experiment(Texp, Tsam, num_drone):
         Drone_ctrl[i] = Controllers(Tsam, "pid", "position")
 
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 0.0, 0.5])
+        P = np.array([0.0, 0.0, 0.3])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(2)             # 5秒静止
 
@@ -42,7 +42,7 @@ def Experiment(Texp, Tsam, num_drone):
 
             Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
             
-        if t > Texp-2:                      # 着陸
+        if t > Texp-3:                      # 着陸
             for i in range(num_drone):
                 Drone_env[i].land(Drone_ctrl[i])
 
@@ -52,13 +52,14 @@ def Experiment(Texp, Tsam, num_drone):
         
         for i in range(num_drone):      # ドローンに入力を送信
             input_acc = Drone_ctrl[i].input_acc
+            # input_acc = 8.8
             input_W = np.array([Drone_ctrl[i].input_Wb[0]*1, Drone_ctrl[i].input_Wb[1]*1, Drone_ctrl[i].input_Wb[2]])
 
-            # cf[i].cmdFullState(zero, 
-            #                 zero, 
-            #                 np.array([0.0, 0.0, input_acc/100.0]), 
-            #                 0.0, 
-            #                 input_W)
+            cf[i].cmdFullState(zero, 
+                            zero, 
+                            np.array([0.0, 0.0, input_acc/100.0]), 
+                            0.0, 
+                            input_W)
 
 
         t = timeHelper.time() - Ts      # ループ周期を一定に維持
@@ -75,7 +76,7 @@ def Experiment(Texp, Tsam, num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
-    Experiment(30, 0.005, 1)
+    Experiment(20, 0.005, 1)
 
 
 # モータマップ4つめ修正
