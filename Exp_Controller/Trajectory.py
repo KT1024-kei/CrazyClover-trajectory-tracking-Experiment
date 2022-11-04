@@ -1,4 +1,9 @@
+import sys
 import numpy as np
+import pandas as pd
+sys.path.append('../')
+from tools.Mathfunction import Mathfunction as MF
+from tools.Decorator import run_once
 
 class Trajectory():
 
@@ -19,6 +24,51 @@ class Trajectory():
   
   def set_clock(self, t):
     self.t = t
+
+  @run_once
+  def poly_traj_init(self, trajectory_plan):
+    # polynominal trajectory planning
+    if trajectory_plan == "straight":
+      self.traj = pd.read_csv('path/to/Trajectory segment parametors/traj_straight_8s.csv')
+    
+    self.len_seg = self.traj["N_segment"][0]
+    self.segs_T = self.traj["Tseg"][0:self.len_seg]
+    self.Xcoeffs = self.traj["Xcoeff"]
+    self.Ycoeffs = self.traj["Ycoeff"]
+    self.Zcoeffs = self.traj["Zcoeff"]
+    self.Order = self.traj["Order"][0]
+
+    self.seg_now = 0
+    self.T = 0
+    self.Toffset = self.t
+
+  def poly_traj(self):
+    t = self.t
+    # print(sum(self.segs_T) + self.Toffset, t)
+    if sum(self.segs_T) + self.Toffset < t:
+      return 0
+    if sum(self.segs_T[:self.seg_now+1])+self.Toffset < t:
+      self.T += self.segs_T[self.seg_now]
+      self.seg_now += 1
+    t -= (self.T + self.Toffset)
+    # print(t)
+    
+    Xcoeff = self.Xcoeffs[self.seg_now*self.Order:(self.seg_now+1)*self.Order]
+    Ycoeff = self.Ycoeffs[self.seg_now*self.Order:(self.seg_now+1)*self.Order]
+    Zcoeff = self.Zcoeffs[self.seg_now*self.Order:(self.seg_now+1)*self.Order]
+    
+    poly_T0 = MF().time_polyder(t, 0, self.Order)
+    poly_T1 = MF().time_polyder(t, 1, self.Order)
+    poly_T2 = MF().time_polyder(t, 2, self.Order)
+    poly_T3 = MF().time_polyder(t, 3, self.Order)
+
+    self.traj_pos = np.array([np.dot(Xcoeff, poly_T0), np.dot(Ycoeff, poly_T0), np.dot(Zcoeff, poly_T0)])
+    self.traj_vel = np.array([np.dot(Xcoeff, poly_T1), np.dot(Ycoeff, poly_T1), np.dot(Zcoeff, poly_T1)])
+    self.traj_acc = np.array([np.dot(Xcoeff, poly_T2), np.dot(Ycoeff, poly_T2), np.dot(Zcoeff, poly_T2)]) + np.array([0.0 ,0.0, 9.8])
+    self.traj_jer = np.array([np.dot(Xcoeff, poly_T3), np.dot(Ycoeff, poly_T3), np.dot(Zcoeff, poly_T3)])
+
+    self.traj_yaw = 0.0
+    self.traj_yaw_rate = 0.0
 
   def traj_circle(self):
     T = 20.0
@@ -51,6 +101,11 @@ class Trajectory():
     
     elif self.trajectory_plan == "stop":
       self.stop_track()
+      
+    elif self.trajectory_plan == "straight":
+      
+      self.poly_traj_init("straight")
+      self.poly_traj()
     
 
 
