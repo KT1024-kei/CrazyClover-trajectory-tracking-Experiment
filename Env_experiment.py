@@ -206,6 +206,9 @@ class Env_Experiment(Frames_setup):
         self.set_reference(controller=controller, command="hovering", P=P)
         self.land_P = np.array([0.0, 0.0, 0.1])
 
+    def track_straight(self, controller, flag):
+        self.set_reference(controller=controller, traj="straight", controller_type="mellinger", init_controller=flag)
+
     def track_circle(self, controller, flag):
         self.set_reference(controller=controller, traj="circle", controller_type="mellinger", init_controller=flag)
 
