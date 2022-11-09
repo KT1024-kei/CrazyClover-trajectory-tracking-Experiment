@@ -12,10 +12,10 @@ class Mellinger(Mathfunction):
     print("Init Mellinger Controller")
 
     # init trajectory
-    self.kp = np.array([0.1, 0.1, 3.0])
-    self.kv = np.array([0.1, 0.1, 2.5])
+    self.kp = np.array([4.3, 4.3, 3.0])
+    self.kv = np.array([3.8, 3.8, 2.5])
     self.ka = np.array([0.0, 0.0, 0.0])
-    self.kR = np.array([25.0, 25.0, 10.0])
+    self.kR = np.array([7.0, 7.0, 1.0])
 
     self.Euler_nom = np.array([0.0, 0.0, 0.0])
     self.Euler_rate_nom = np.array([0.0, 0.0, 0.0])
@@ -49,7 +49,7 @@ class Mellinger(Mathfunction):
     self.ref_acc = self.kp * (traj_pos - self.P) + self.kv*(traj_vel - self.V) + traj_acc
 
     # nominal acceleraion 
-    self.input_acc = np.linalg.norm(self.ref_acc)
+    self.input_acc = np.dot(self.ref_acc, np.matmul(self.R, np.array([0.0, 0.0, 1.0])))
 
   def Attitude_controller(self):
     
@@ -65,7 +65,7 @@ class Mellinger(Mathfunction):
     traj_Ryc = np.array([-np.sin(traj_yaw), np.cos(traj_yaw), 0.0])
     traj_Rz = self.ref_acc/np.linalg.norm(self.ref_acc)
     traj_Rx = np.cross(traj_Ryc, traj_Rz)/np.linalg.norm(np.cross(traj_Ryc, traj_Rz))
-    traj_Ry = np.cross(traj_Rz, traj_Rx)
+    traj_Ry = np.cross(traj_Rz, traj_Rx)/np.linalg.norm(np.cross(traj_Rz, traj_Rx))
     # traj_Ry = np.cross(traj_Rz, traj_Rxc)
     # traj_Rx = np.cross(traj_Ry, traj_Rz)
 
@@ -75,8 +75,8 @@ class Mellinger(Mathfunction):
 
 
     # calculate nominal Angular velocity
-    traj_wy =  np.dot(traj_Rx, traj_jer) / np.dot(traj_Rz, traj_acc)
-    traj_wx = -np.dot(traj_Ry, traj_jer) / np.dot(traj_Rz, traj_acc)
+    traj_wy =  np.dot(traj_Rx, traj_jer) / np.dot(traj_Rz, self.ref_acc)
+    traj_wx = -np.dot(traj_Ry, traj_jer) / np.dot(traj_Rz, self.ref_acc)
     traj_wz = (traj_yaw_rate * np.dot(traj_Rxc, traj_Rx) + traj_wy * np.dot(traj_Ryc, traj_Rz))/np.linalg.norm(np.cross(traj_Ryc, traj_Rz))
     self.traj_W[0] = traj_wx
     self.traj_W[1] = traj_wy
@@ -86,8 +86,8 @@ class Mellinger(Mathfunction):
     self.input_Wb = self.traj_W + self.kR*self.Wedge(-(np.matmul(traj_R.T, self.R) - np.matmul(self.R.T, traj_R))/2.0)
     
     # calculate nominal Euler angle and Euler angle rate
-    self.Euler_nom[1] =  np.arctan( ( traj_acc[0]*np.cos(traj_yaw) + traj_acc[1]*np.sin(traj_yaw) ) / (traj_acc[2]))                                                        
-    self.Euler_nom[0] = np.arctan( ( traj_acc[0]*np.sin(traj_yaw) - traj_acc[1]*np.cos(traj_yaw) ) / np.sqrt( (traj_acc[2])**2 + ( traj_acc[0]*np.cos(traj_yaw) + traj_acc[2]*np.sin(traj_yaw) )**2));  
+    self.Euler_nom[1] =  np.arctan( ( self.ref_acc[0]*np.cos(traj_yaw) + self.ref_acc[1]*np.sin(traj_yaw) ) / (self.ref_acc[2]))                                                        
+    self.Euler_nom[0] = np.arctan( ( self.ref_acc[0]*np.sin(traj_yaw) - self.ref_acc[1]*np.cos(traj_yaw) ) / np.sqrt( (self.ref_acc[2])**2 + ( self.ref_acc[0]*np.cos(traj_yaw) + self.ref_acc[2]*np.sin(traj_yaw) )**2));  
     self.Euler_nom[2] = traj_yaw
 
     self.input_Euler_rate = self.BAV2EAR(self.Euler_nom, self.input_Wb)
