@@ -89,7 +89,7 @@ class Env_Experiment(Frames_setup):
             rospy.sleep(0.5)
             exit()
 
-        self.Ppre[0] = f.transform.translation.x; self.Ppre[1] = f.transform.translation.y; self.Ppre[2] = f.transform.translation.z
+        self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.Quaternion = (f.transform.rotation.x,f.transform.rotation.y,f.transform.rotation.z,f.transform.rotation.w)
         self.Euler = tf_conversions.transformations.euler_from_quaternion(self.Quaternion)
         self.Eulerpre = self.Euler
@@ -202,8 +202,8 @@ class Env_Experiment(Frames_setup):
         self.set_reference(controller=controller, command="land", init_controller=True, P=self.land_P)
         
     @run_once
-    def hovering(self, controller, P):
-        self.set_reference(controller=controller, command="hovering", P=P)
+    def hovering(self, controller, P, Yaw=0.0):
+        self.set_reference(controller=controller, command="hovering", P=P, Euler=np.array([0.0, 0.0, Yaw]))
         self.land_P = np.array([0.0, 0.0, 0.1])
 
     def track_straight(self, controller, flag):

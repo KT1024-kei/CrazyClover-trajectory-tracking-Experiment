@@ -28,7 +28,7 @@ def Experiment(Texp, Tsam, num_drone):
         Drone_ctrl[i] = Controllers(Tsam, "pid", "position")
 
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 0.0, 0.3])
+        P = np.array([0.0, 0.0, 0.4])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(2)             # 5秒静止
 

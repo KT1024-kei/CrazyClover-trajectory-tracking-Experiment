@@ -34,7 +34,7 @@ def Experiment(Texp, Tsam, num_drone):
 
         
     for i in range(num_drone):          # ホバリング
-        P = np.array([0.0, 1.0, 0.4])
+        P = np.array([-1.0, 0.0, 0.4])
         Drone_env[i].hovering(Drone_ctrl[i], P)
         timeHelper.sleep(2)             # 5秒静止
 
@@ -48,8 +48,8 @@ def Experiment(Texp, Tsam, num_drone):
             Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
 
         # -------------- コントローラの変更 ----------------
-        # 5秒から15秒でコントローラを軌道追従用に変更
-        if 5 < t < 25:
+        # 5秒からTexp秒でコントローラを軌道追従用に変更
+        if 10 < t < Texp:
             if circle_flag:
                 Drone_ctrl[i].switch_controller("mellinger")
                 Drone_env[i].track_straight(Drone_ctrl[i], False)
@@ -96,4 +96,4 @@ def Experiment(Texp, Tsam, num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
-    Experiment(25, 0.005, 1)
+    Experiment(20, 0.005, 1)
