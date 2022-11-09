@@ -29,7 +29,7 @@ class Trajectory():
   def poly_traj_init(self, trajectory_plan):
     # polynominal trajectory planning
     if trajectory_plan == "straight":
-      self.traj = pd.read_csv('path/to/Trajectory segment parametors/traj_straight_8s.csv')
+      self.traj = pd.read_csv('~/crazyswarm/ros_ws/src/crazyswarm/CrazyClover-Experiment/Exp_Controller/Trajectory segment parametors/traj_straight_4s.csv')
     
     self.len_seg = self.traj["N_segment"][0]
     self.segs_T = self.traj["Tseg"][0:self.len_seg]
@@ -71,12 +71,12 @@ class Trajectory():
     self.traj_yaw_rate = 0.0
 
   def traj_circle(self):
-    T = 20.0
+    T = 7.0
     A = 1.0
     w = 2*np.pi/T
-    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 0.5
+    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 0.4
     self.traj_vel[0] = -A*w*np.sin(w*self.t);    self.traj_vel[1] =  A*w*np.cos(w*self.t);    self.traj_vel[2] = 0.0
-    self.traj_acc[0] = -A*w**2*np.cos(w*self.t); self.traj_acc[1] = -A*w**2*np.sin(w*self.t); self.traj_acc[2] = 8.8
+    self.traj_acc[0] = -A*w**2*np.cos(w*self.t); self.traj_acc[1] = -A*w**2*np.sin(w*self.t); self.traj_acc[2] = 9.8
     self.traj_jer[0] =  A*w**3*np.sin(w*self.t); self.traj_jer[1] = -A*w**3*np.cos(w*self.t); self.traj_jer[2] = 0.0
     # print(self.traj_acc)
 
@@ -101,7 +101,7 @@ class Trajectory():
     
     elif self.trajectory_plan == "stop":
       self.stop_track()
-      
+
     elif self.trajectory_plan == "straight":
       
       self.poly_traj_init("straight")
