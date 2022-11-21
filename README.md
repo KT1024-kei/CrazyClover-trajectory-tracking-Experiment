@@ -9,13 +9,16 @@
 ### Experiment
 - hovering.py : ホバリング実験
 - circle_tracking.py : 円軌道追従実験 ( sin and cos function )
-- polytraj_tracking.py : 直線軌道追従 ( polynominal function )
+- polytraj_tracking.py : 任意の軌道追従 ( polynominal function )
 
 #### circle trajectory tracking
 ```python
-python3 circle_tracking.py
+python3 polytraj_tracking.py
 ```
-https://user-images.githubusercontent.com/64090003/200737571-99d39ad9-0197-49a2-a5ca-0e7031bd1def.mp4
+
+
+https://user-images.githubusercontent.com/64090003/202968225-bc67fa44-a4d7-42bb-ba33-c110fe665a3f.mp4
+
 
 ### references 
 - [Differential Flatness of Quadrotor Dynamics Subject to Rotor Drag for Accurate Tracking of High-Speed Trajectories - Matthias Faessler, Antonio Franchi and, Davide Scaramuzza](https://arxiv.org/pdf/1712.02402.pdf)
