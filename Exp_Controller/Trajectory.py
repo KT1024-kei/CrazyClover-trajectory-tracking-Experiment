@@ -38,7 +38,8 @@ class Trajectory():
 
     elif trajectory_plan == "land":
       self.traj = pd.read_csv('~/crazyswarm/ros_ws/src/crazyswarm/CrazyClover-Experiment/Exp_Controller/Trajectory segment parametors/traj_land.csv')
-
+    else:
+      return 0
     self.len_seg = self.traj["N_segment"][0]
     self.segs_T = self.traj["Tseg"][0:self.len_seg]
     self.Xcoeffs = self.traj["Xcoeff"]
