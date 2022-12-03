@@ -32,6 +32,7 @@ class Env_Experiment(Frames_setup):
 
         self.Tend = Texp
         self.Tsam = Tsam
+        self.t = 0
 
 
         self.mathfunc = Mathfunction()
@@ -126,6 +127,10 @@ class Env_Experiment(Frames_setup):
         self.R = self.mathfunc.Euler2Rot(self.Euler)
         self.Ppre[0] = self.P[0]; self.Ppre[1] = self.P[1]; self.Ppre[2] = self.P[2]
         self.Eulerpre = self.Euler
+    
+    def set_clock(self, t):
+        self.t = t
+
     def set_dt(self, dt):
         self.dt = dt
 
@@ -154,15 +159,15 @@ class Env_Experiment(Frames_setup):
             else:
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)
         elif controller_type == "mellinger":
-            controller.set_reference(traj)
+            controller.set_reference(traj, self.t)
 
 
-    def take_log(self, t, ctrl):
-        self.log.write_state(t, self.P, self.Vfiltered, self.R, self.Euler, np.zeros(3), np.zeros(3), self.M)
-        ctrl.log(self.log, t)
+    def take_log(self, ctrl):
+        self.log.write_state(self.t, self.P, self.Vfiltered, self.R, self.Euler, np.zeros(3), np.zeros(3), self.M)
+        ctrl.log(self.log, self.t)
 
-    def save_log(self, t):
-        self.log.csvWriter_state(t, self.P, self.Vfiltered, self.R, self.Euler, self.M)
+    def save_log(self):
+        self.log.csvWriter_state(self.t, self.P, self.Vfiltered, self.R, self.Euler, self.M)
 
     @timeout(0.01)
     def input_with_timeout(self, msg=None):
@@ -187,14 +192,12 @@ class Env_Experiment(Frames_setup):
 
         return input_thrust, flag
 
-    def time_check(self, t, Tint, Tend):
+    def time_check(self, Tint, Tend):
         if Tint < self.Tsam:
             time.sleep(self.Tsam - Tint)
-        if t > Tend:
+        if self.t > Tend:
             return True
         return False
-
-
 
     @run_once
     def land(self, controller):
@@ -205,6 +208,13 @@ class Env_Experiment(Frames_setup):
     def hovering(self, controller, P, Yaw=0.0):
         self.set_reference(controller=controller, command="hovering", P=P, Euler=np.array([0.0, 0.0, Yaw]))
         self.land_P = np.array([0.0, 0.0, 0.1])
+
+    def takeoff(self, controller):
+        self.set_reference(controller=controller, traj="takeoff", controller_type="mellinger")
+        self.land_P = np.array([0.0, 0.0, 0.1])
+
+    def land_track(self, controller):
+        self.set_reference(controller=controller, traj="land", controller_type="mellinger", init_controller=False)
 
     def track_straight(self, controller, flag):
         self.set_reference(controller=controller, traj="straight", controller_type="mellinger", init_controller=flag)
