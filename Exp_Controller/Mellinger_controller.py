@@ -26,7 +26,8 @@ class Mellinger(Mathfunction):
 
     self.trajectory = Trajectory()
 
-  def set_reference(self, traj_plan):
+  def set_reference(self, traj_plan, t):
+    self.trajectory.set_clock(t)
     self.trajectory.set_traj_plan(traj_plan)
     self.rad2deg = 180.0/np.pi
 
@@ -102,8 +103,8 @@ class Mellinger(Mathfunction):
   def stop_tracking(self):
     self.set_reference("stop")
 
-  def log_nom(self, log, t):
-    log.write_nom(t=t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.trajectory.traj_pos, V=self.trajectory.traj_vel, Euler=self.Euler_nom, Wb=self.traj_W, Euler_rate=self.Euler_rate_nom)
+  def log_nom(self, log):
+    log.write_nom(t=self.t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.trajectory.traj_pos, V=self.trajectory.traj_vel, Euler=self.Euler_nom, Wb=self.traj_W, Euler_rate=self.Euler_rate_nom)
 
     
 
