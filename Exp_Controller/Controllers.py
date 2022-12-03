@@ -53,6 +53,7 @@ class Controllers():
   def switch_controller(self, controller_type):
 
     if controller_type == "pid":
+      self.controller_mode = "pid"
       self.pid_controller = Pid_Controller(self.dt, self.mode)
       self.controller = self.pid_controller
       self.set_reference = self.pid_controller.set_reference
@@ -62,6 +63,7 @@ class Controllers():
       self.log = self.pid_controller.log_nom
 
     elif controller_type == "mellinger":
+      self.controller_mode = "mellinger"
       self.mellinger_controller = Mellinger(self.dt)
       self.controller = self.mellinger_controller
       self.cal_output = self.mellinger_controller.mellinger_ctrl
