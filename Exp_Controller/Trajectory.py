@@ -26,7 +26,7 @@ class Trajectory():
   def set_clock(self, t):
     self.t = t
 
-  @run_once
+
   # * polynominal trajectory planning
   def poly_traj_init(self, trajectory_plan):
 
@@ -34,10 +34,17 @@ class Trajectory():
       self.traj = pd.read_csv('~/crazyswarm/ros_ws/src/crazyswarm/CrazyClover-Experiment/Exp_Controller/Trajectory segment parametors/traj_straight_4s.csv')
     
     elif trajectory_plan == "takeoff":
-      self.traj = pd.read_csv('~/crazyswarm/ros_ws/src/crazyswarm/CrazyClover-Experiment/Exp_Controller/Trajectory segment parametors/traj_taleoff.csv')
+      self.traj = pd.read_csv('/home/user/crazyswarm/ros_ws/src/crazyswarm/Exp_CrazyClover/Exp_Controller/Trajectory segment parametors/traj_takeoff.csv')
 
     elif trajectory_plan == "land":
-      self.traj = pd.read_csv('~/crazyswarm/ros_ws/src/crazyswarm/CrazyClover-Experiment/Exp_Controller/Trajectory segment parametors/traj_land.csv')
+      self.traj = pd.read_csv('/home/user/crazyswarm/ros_ws/src/crazyswarm/Exp_CrazyClover/Exp_Controller/Trajectory segment parametors/traj_land.csv')
+
+    elif trajectory_plan == "takeoff_50cm":
+      self.traj = pd.read_csv('/home/user/crazyswarm/ros_ws/src/crazyswarm/Exp_CrazyClover/Exp_Controller/Trajectory segment parametors/traj_takeoff_50cm.csv')
+
+    elif trajectory_plan == "land_50cm":
+      self.traj = pd.read_csv('/home/user/crazyswarm/ros_ws/src/crazyswarm/Exp_CrazyClover/Exp_Controller/Trajectory segment parametors/traj_land_50cm.csv')
+
     else:
       return 0
     self.len_seg = self.traj["N_segment"][0]
@@ -112,10 +119,10 @@ class Trajectory():
     self.traj_yaw_rate = 0.0
 
   def traj_circle(self):
-    T = 7.0
-    A = 1.0
+    T = 15
+    A = 0.5
     w = 2*np.pi/T
-    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 1.0
+    self.traj_pos[0] =  A*np.cos(w*self.t);      self.traj_pos[1] =  A*np.sin(w*self.t);      self.traj_pos[2] = 0.5
     self.traj_vel[0] = -A*w*np.sin(w*self.t);    self.traj_vel[1] =  A*w*np.cos(w*self.t);    self.traj_vel[2] = 0.0
     self.traj_acc[0] = -A*w**2*np.cos(w*self.t); self.traj_acc[1] = -A*w**2*np.sin(w*self.t); self.traj_acc[2] = 9.8
     self.traj_jer[0] =  A*w**3*np.sin(w*self.t); self.traj_jer[1] = -A*w**3*np.cos(w*self.t); self.traj_jer[2] = 0.0
@@ -126,7 +133,7 @@ class Trajectory():
   
   def stop_track(self):
 
-    # self.traj_pos[0] = 0.0; self.traj_pos[1] = 0.0;  self.traj_pos[2] = 1.0
+    self.traj_pos[0] = 0.0; self.traj_pos[1] = 0.0;  self.traj_pos[2] = 0.0
     self.traj_vel[0] = 0.0; self.traj_vel[1] = 0.0;  self.traj_vel[2] = 0.0
     self.traj_acc[0] = 0.0; self.traj_acc[1] = 0.0;  self.traj_acc[2] = 9.8
     self.traj_jer[0] = 0.0; self.traj_jer[1] = 0.0;  self.traj_jer[2] = 0.0
@@ -146,10 +153,10 @@ class Trajectory():
     elif self.trajectory_plan == "straight":
       self.poly_traj_non_periodic()
     
-    elif self.trajectory == "takeoff":
+    elif self.trajectory_plan == "takeoff" or self.trajectory_plan == "takeoff_50cm":
       self.poly_traj_non_periodic()
 
-    elif self.trajectory == "land":
+    elif self.trajectory_plan == "land" or self.trajectory_plan == "land_50cm":
       self.poly_traj_non_periodic()
   
   def set_poly_traj(self, poly_traj):

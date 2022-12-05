@@ -22,21 +22,25 @@ def Experiment(Texp, Tsam, num_drone):
     Drone_env = [0]*num_drone
     Drone_ctrl = [0]*num_drone
 
-    circle_flag = True
-    stop_flag = True
-
-    land_time = 5
-
     zero = np.zeros(3)
     for i in range(num_drone):
         Drone_env[i] = Env_Experiment(Texp, Tsam, i)
-        Drone_ctrl[i] = Controllers(Tsam, "pid", "position")
+        Drone_ctrl[i] = Controllers(Tsam, "mellinger")
 
         
     for i in range(num_drone):          # ホバリング
         P = np.array([0.0, 0.0, 0.4])
-        Drone_env[i].hovering(Drone_ctrl[i], P)
+        Drone_env[i].takeoff_50cm(Drone_ctrl[i])
         timeHelper.sleep(2)             # 5秒静止
+
+    track_flag = True
+    stop_flag = True
+    land_flag = True
+
+    takeoff_time = 10
+    Texp = Texp + takeoff_time
+    stop_time = Texp + 5
+    land_time = stop_time + 10
 
     Ts = timeHelper.time()
     Te = -Tsam
@@ -44,26 +48,29 @@ def Experiment(Texp, Tsam, num_drone):
 
     while True:
         for i in range(num_drone):
-            # print(Drone_ctrl[i])
-            Drone_env[i].take_log(t, Drone_ctrl[i])    #　状態と入力を記録
+            Env.set_clock(t)
+            Drone_env[i].set_clock(t)
+            Drone_env[i].take_log(Drone_ctrl[i])    #　状態と入力を記録
 
         # -------------- コントローラの変更 ----------------
         # 5秒から15秒でコントローラを軌道追従用に変更
-        if 5 < t < 25:
-            if circle_flag:
+        if takeoff_time < t < Texp:
+            if track_flag:
                 Drone_ctrl[i].switch_controller("mellinger")
                 Drone_env[i].track_circle(Drone_ctrl[i], False)
-                circle_flag = False
+                track_flag = False
 
         # 軌道追従を終了
-        if Texp < t:
+        if Texp < t < stop_time:
             if stop_flag:
                 Drone_env[i].stop_track(Drone_ctrl[i])
                 stop_flag = False
 
-        if t > Texp+land_time:                      # 着陸
+        if stop_time < t < land_time:                      # 着陸
             for i in range(num_drone):
-                Drone_env[i].land(Drone_ctrl[i])
+                if land_flag:
+                    Drone_env[i].land_track_50cm(Drone_ctrl[i])
+                    land_flag = False
 
         # -------------- ------------------ ----------------
 
@@ -85,7 +92,7 @@ def Experiment(Texp, Tsam, num_drone):
         t = timeHelper.time() - Ts      # ループ周期を一定に維持
         Tsam = t - Te
         Te = t
-        if Env.time_check(t, t - Te, Texp+land_time+5): break
+        if Env.time_check(t - Te, land_time): break
 
         # 状態を更新
         for i in range(num_drone):
@@ -96,8 +103,5 @@ def Experiment(Texp, Tsam, num_drone):
         cf[i].cmdFullState(zero, zero, zero, 0.0, zero)
 
 if __name__ == "__main__":
-    Experiment(30, 0.005, 1)
+    Experiment(20, 0.005, 1)
 
-
-# モータマップ4つめ修正
-# 制御周期を姿勢周期にする

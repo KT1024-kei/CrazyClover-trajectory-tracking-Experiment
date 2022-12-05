@@ -111,9 +111,6 @@ class Env_Experiment(Frames_setup):
         # 位置情報の更新
         self.P[0] = f.transform.translation.x; self.P[1] = f.transform.translation.y; self.P[2] = f.transform.translation.z
         self.P = self.LowpassP.LowPass2D(self.P, self.dt)
-        # self.P[0] = self.mathfunc.Remove_outlier(self.P[0], self.Ppre[0], 0.2)
-        # self.P[1] = self.mathfunc.Remove_outlier(self.P[1], self.Ppre[1], 0.2)
-        # self.P[2] = self.mathfunc.Remove_outlier(self.P[2], self.Ppre[2], 0.1)
         # 速度情報の更新
         self.Vrow = self.mathfunc.deriv(self.P, self.Ppre, self.dt)
         self.Vfiltered = self.LowpassV.LowPass2D(self.Vrow, self.dt)
@@ -148,7 +145,8 @@ class Env_Experiment(Frames_setup):
                             traj="circle",
                             controller_type="pid",
                             command = "hovering",
-                            init_controller=True):
+                            init_controller=True,
+                            tmp_P=np.zeros(3)):
         if init_controller:
             controller.select_controller()
         if controller_type == "pid":
@@ -159,7 +157,7 @@ class Env_Experiment(Frames_setup):
             else:
                 controller.set_reference(P, V, R, Euler, Wb, Euler_rate, controller_type)
         elif controller_type == "mellinger":
-            controller.set_reference(traj, self.t)
+            controller.set_reference(traj, self.t, tmp_P)
 
 
     def take_log(self, ctrl):
@@ -209,12 +207,12 @@ class Env_Experiment(Frames_setup):
         self.set_reference(controller=controller, command="hovering", P=P, Euler=np.array([0.0, 0.0, Yaw]))
         self.land_P = np.array([0.0, 0.0, 0.1])
 
-    def takeoff(self, controller):
-        self.set_reference(controller=controller, traj="takeoff", controller_type="mellinger")
+    def takeoff(self, controller, Pinit=np.array([0.0, 0.0, 0.0])):
+        self.set_reference(controller=controller, traj="takeoff", controller_type="mellinger", tmp_P=Pinit)
         self.land_P = np.array([0.0, 0.0, 0.1])
 
     def land_track(self, controller):
-        self.set_reference(controller=controller, traj="land", controller_type="mellinger", init_controller=False)
+        self.set_reference(controller=controller, traj="land", controller_type="mellinger", init_controller=False, tmp_P=np.array([self.P[0], self.P[1], 0.0]))
 
     def track_straight(self, controller, flag):
         self.set_reference(controller=controller, traj="straight", controller_type="mellinger", init_controller=flag)
@@ -223,5 +221,5 @@ class Env_Experiment(Frames_setup):
         self.set_reference(controller=controller, traj="circle", controller_type="mellinger", init_controller=flag)
 
     def stop_track(self, controller):
-        self.set_reference(controller=controller, traj="stop", controller_type="mellinger", init_controller=False)
+        self.set_reference(controller=controller, traj="stop", controller_type="mellinger", init_controller=False, tmp_P=np.array([self.P[0], self.P[1], 1.0]))
         self.land_P[0:2] = self.P[0:2]

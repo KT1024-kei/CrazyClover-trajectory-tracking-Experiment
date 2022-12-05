@@ -15,7 +15,7 @@ class Mellinger(Mathfunction):
     self.kp = np.array([4.3, 4.3, 3.0])
     self.kv = np.array([3.8, 3.8, 2.5])
     self.ka = np.array([0.0, 0.0, 0.0])
-    self.kR = np.array([7.0, 7.0, 1.0])
+    self.kR = np.array([10.0, 10.0, 0.5])
 
     self.Euler_nom = np.array([0.0, 0.0, 0.0])
     self.Euler_rate_nom = np.array([0.0, 0.0, 0.0])
@@ -26,10 +26,20 @@ class Mellinger(Mathfunction):
 
     self.trajectory = Trajectory()
 
-  def set_reference(self, traj_plan, t):
+  def set_reference(self, traj_plan, t, tmp_P=np.zeros(3)):
     self.trajectory.set_clock(t)
     self.trajectory.set_traj_plan(traj_plan)
-    self.rad2deg = 180.0/np.pi
+
+    self.tmp_pos = np.zeros(3)
+    # * set takeoff position for polynominal land trajectory 
+    if traj_plan == "takeoff" or traj_plan == "takeoff_50cm":
+      self.tmp_pos = tmp_P
+    # * set landing position for polynominal land trajectory 
+    elif traj_plan == "land" or traj_plan == "land_50cm":
+      self.tmp_pos = tmp_P
+    # * set stop position when stop tracking trajectory
+    elif traj_plan == "stop":
+      self.tmp_pos = tmp_P
 
   def set_state(self, P, V, R, Euler):
 
@@ -38,11 +48,10 @@ class Mellinger(Mathfunction):
     self.R = R
     self.Euler = Euler
 
-  
   def Position_controller(self):
 
     # set trajectory of each state
-    traj_pos = self.trajectory.traj_pos
+    traj_pos = self.trajectory.traj_pos + self.tmp_pos
     traj_vel = self.trajectory.traj_vel
     traj_acc = self.trajectory.traj_acc
     
@@ -103,8 +112,8 @@ class Mellinger(Mathfunction):
   def stop_tracking(self):
     self.set_reference("stop")
 
-  def log_nom(self, log):
-    log.write_nom(t=self.t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.trajectory.traj_pos, V=self.trajectory.traj_vel, Euler=self.Euler_nom, Wb=self.traj_W, Euler_rate=self.Euler_rate_nom)
+  def log_nom(self, log, t):
+    log.write_nom(t=t, input_acc=self.input_acc, input_Wb=self.input_Wb, P=self.trajectory.traj_pos+self.tmp_pos, V=self.trajectory.traj_vel, Euler=self.Euler_nom, Wb=self.traj_W, Euler_rate=self.Euler_rate_nom)
 
     
 
